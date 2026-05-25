@@ -1,7 +1,27 @@
 #include <Arduino.h>
 #include <LovyanGFX.hpp>
-#include <ELECHOUSE_CC1101.h>
+#include <SPI.h> // Стандартная встроенная библиотека
 
+// --- НАСТРОЙКА SPI ДЛЯ CC1101 НА LILYGO T-EMBED ---
+#define CC1101_SCLK  18
+#define CC1101_MOSI  23
+#define CC1101_MISO  -1 // Не используется для записи
+#define CC1101_CS    5
+#define CC1101_GDO0  4
+
+SPIClass * cc1101_spi = NULL;
+
+// Функция отправки команды в CC1101
+void writeCC1101Register(byte reg, byte value) {
+  cc1101_spi->beginTransaction(SPISettings(CC1101_SCLK, MSBFIRST, SPI_MODE0));
+  digitalWrite(CC1101_CS, LOW);
+  cc1101_spi->transfer(reg);
+  cc1101_spi->transfer(value);
+  digitalWrite(CC1101_CS, HIGH);
+  cc1101_spi->endTransaction();
+}
+
+// --- НАСТРОЙКА ЭКРАНА ---
 class LGFX : public lgfx::LGFX_Default {
 public:
   LGFX(void) {
@@ -47,10 +67,17 @@ LGFX lcd;
 void setup() {
   Serial.begin(115200);
 
+  // Инициализация пинов CC1101
+  pinMode(CC1101_CS, OUTPUT);
+  digitalWrite(CC1101_CS, HIGH);
+  cc1101_spi = new SPIClass(HSPI);
+  
+  // Инициализация экрана
   lcd.init();
   lcd.setRotation(1);
   lcd.fillScreen(TFT_BLACK);
   
+  // Рисуем меню
   lcd.setTextColor(TFT_WHITE, TFT_BLACK);
   lcd.setTextSize(3);
   lcd.setCursor(10, 20);
@@ -59,15 +86,15 @@ void setup() {
   lcd.setTextSize(4);
   lcd.setTextColor(TFT_GREEN, TFT_BLACK);
   lcd.setCursor(30, 60);
-  lcd.print("Привет!"); // Ваше слово
+  lcd.print("Привет!"); // Твое слово
 
   lcd.setTextSize(2);
   lcd.setTextColor(TFT_CYAN, TFT_BLACK);
   lcd.setCursor(10, 110);
   lcd.print("CC1101 Ready...");
 
-  ELECHOUSE_cc1101.Init();
-  ELECHOUSE_cc1101.setMHZ(433.92);
+  // Отправляем команду сброса в CC1101, чтобы убедиться что он жив
+  writeCC1101Register(0x30, 0x00); // Команда SRES (Reset)
 }
 
 void loop() {
