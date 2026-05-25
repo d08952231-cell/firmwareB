@@ -1,13 +1,34 @@
 #include <Arduino.h>
-#include <LovyanGFX.hpp>
 
-// Используем готовый класс для LilyGO T-Embed из самой библиотеки
-LGFX tft;
+// === ЖЕСТКО ЗАДАЕМ НАСТРОЙКИ ЭКРАНА ПРЯМО В КОДЕ ===
+#define USER_SETUP_INFO "LilyGO_TEmbed"
+#define ST7789_DRIVER
+#define TFT_WIDTH  135
+#define TFT_HEIGHT 240
+
+#define TFT_MOSI 23
+#define TFT_SCLK 18
+#define TFT_CS   5
+#define TFT_DC   15
+#define TFT_RST  13
+#define TFT_BL   27
+
+#define LOAD_GLCD   // Шрифт 1
+#define LOAD_FONT2  // Шрифт 2
+#define SPI_FREQUENCY  20000000
+
+#include <TFT_eSPI.h> // Подключаем библиотеку ПОСЛЕ того, как задали настройки
+
+TFT_eSPI tft = TFT_eSPI();
 
 void setup() {
   Serial.begin(115200);
-  
-  // Запуск экрана
+
+  // Включаем подсветку экрана
+  pinMode(27, OUTPUT);
+  digitalWrite(27, HIGH);
+
+  // Запускаем экран
   tft.init();
   tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
