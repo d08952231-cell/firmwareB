@@ -1,16 +1,26 @@
 #include <Arduino.h>
-#include "LilyGo_T-Embed.h" // ОФИЦИАЛЬНАЯ БИБЛИОТЕКА
+#include <TFT_eSPI.h>
 
-LilyGo_TEmbed tft;
+TFT_eSPI tft = TFT_eSPI();
 
 void setup() {
   Serial.begin(115200);
 
-  // Официальная команда включения экрана и подсветки
-  tft.begin();
+  // МАГИЯ BRUCE: Включаем коммутатор экрана (SN74LVC1G3157)
+  // Без этого экран физически не подключен к шине SPI
+  pinMode(10, OUTPUT);
+  digitalWrite(10, HIGH);
 
+  // Включаем подсветку
+  pinMode(27, OUTPUT);
+  digitalWrite(27, HIGH);
+
+  // Инициализация экрана
+  tft.init();
+  tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
   
+  // Рисуем меню
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setTextSize(3);
   tft.setCursor(10, 20);
