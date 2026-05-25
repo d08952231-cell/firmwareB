@@ -22,6 +22,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install platformio
 
+      # МАГИЯ BRUCE: Скачиваем файл настроек экрана прямо из их репозитория
+      - name: Download T-Embed Display Config
+        run: |
+          mkdir -p ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/config
+          wget -O ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/config/User_Setup.h https://raw.githubusercontent.com/pr3y/Bruce/main/src/display/User_Setup.h
+
       - name: Build Firmware
         run: pio run -e esp32dev
 
