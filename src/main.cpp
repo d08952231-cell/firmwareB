@@ -1,19 +1,18 @@
 #include <Arduino.h>
 #include <LovyanGFX.hpp>
-#include <SPI.h> // Стандартная встроенная библиотека
+#include <SPI.h>
 
 // --- НАСТРОЙКА SPI ДЛЯ CC1101 НА LILYGO T-EMBED ---
 #define CC1101_SCLK  18
 #define CC1101_MOSI  23
-#define CC1101_MISO  -1 // Не используется для записи
+#define CC1101_MISO  -1 
 #define CC1101_CS    5
 #define CC1101_GDO0  4
 
 SPIClass * cc1101_spi = NULL;
 
-// Функция отправки команды в CC1101
 void writeCC1101Register(byte reg, byte value) {
-  cc1101_spi->beginTransaction(SPISettings(CC1101_SCLK, MSBFIRST, SPI_MODE0));
+  cc1101_spi->beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
   digitalWrite(CC1101_CS, LOW);
   cc1101_spi->transfer(reg);
   cc1101_spi->transfer(value);
@@ -27,13 +26,13 @@ public:
   LGFX(void) {
     { 
       auto cfg = bus_spi();
-      cfg.spi_host = VSPI_HOST;
+      cfg.spi_host = SPI2_HOST;
       cfg.spi_mode = 0;
-      cfg.freq_write = 40000000;
-      cfg.freq_read  = 16000000;
+      cfg.freq_write = 20000000;  // ИСПРАВЛЕНО: безопасная частота для сборки
+      cfg.freq_read  = 10000000;  // ИСПРАВЛЕНО
       cfg.spi_3wire  = true;
       cfg.use_lock   = true;
-      cfg.dma_channel = 1;
+      cfg.dma_channel = SPI_DMA_CH_AUTO;
       cfg.pin_sclk = 18;
       cfg.pin_mosi = 23;
       cfg.pin_miso = -1;
@@ -93,8 +92,8 @@ void setup() {
   lcd.setCursor(10, 110);
   lcd.print("CC1101 Ready...");
 
-  // Отправляем команду сброса в CC1101, чтобы убедиться что он жив
-  writeCC1101Register(0x30, 0x00); // Команда SRES (Reset)
+  // Сброс CC1101
+  writeCC1101Register(0x30, 0x00);
 }
 
 void loop() {
